@@ -2,8 +2,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 
 export default defineConfig(() => ({
-  // Load the monorepo-root .env for local development; only VITE_* values reach the browser.
-  envDir: "../../",
   // SWC compiles JSX/TS-free JavaScript quickly and keeps React Fast Refresh in development.
   plugins: [react()],
   server: {

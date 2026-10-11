@@ -5,7 +5,7 @@ import { SelectedItem } from "./SelectedItem";
 
 export const SelectedContent = React.memo(function SelectedContent({ selected, totalSelected, selectedQuery, onSearch, selectedWords, selectedChars, isOver, setNodeRef, onRemove, onClear, onEdit, onStyleChange, selectedLayout = "vertical", onLayoutChange = () => {} }) {
   return (
-    <section id="selected-content" ref={setNodeRef} className={`card min-w-0 overflow-hidden transition ${isOver ? "ring-2 ring-emerald-400" : ""}`}>
+    <section ref={setNodeRef} className={`card min-w-0 overflow-hidden transition ${isOver ? "ring-2 ring-emerald-400" : ""}`}>
       <div className="border-b border-slate-100 p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0"><h2 className="font-black">Selected Content</h2><p className="text-xs text-slate-400">{totalSelected} copies · {selectedWords} words · {selectedChars} chars · source remains unchanged</p></div>

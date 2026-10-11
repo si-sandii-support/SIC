@@ -27,8 +27,7 @@ renderRouter.post("/pptx", async (req, res, next) => {
     res.json({ slides });
   } catch (error) {
     // Rendering is an enhancement; the client can fall back to XML parsing.
-    console.error("SIC PPTX renderer failed:", error);
-    res.status(503).json({ error: "Office slide rendering is temporarily unavailable. You can continue with structured extraction." });
+    res.status(503).json({ error: "Office slide renderer unavailable.", detail: String(error?.message || error) });
   } finally {
     await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
   }

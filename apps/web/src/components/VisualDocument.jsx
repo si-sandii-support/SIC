@@ -145,8 +145,8 @@ function PdfVisual({ visual, file, query, onSelection, selectedIds }) {
       setDragRect(next);
     };
     const up = async () => {
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", up);
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("mouseup", up);
       const r = dragRectRef.current || { x: start.x, y: start.y, w: 0, h: 0 };
       dragRectRef.current = null;
       setDragRect(null);
@@ -169,8 +169,8 @@ function PdfVisual({ visual, file, query, onSelection, selectedIds }) {
       onSelection(item);
       setRegionMode(false);
     };
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", up, { once: true });
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", up, { once: true });
   }
 
   return (
@@ -185,14 +185,14 @@ function PdfVisual({ visual, file, query, onSelection, selectedIds }) {
         </div>
       </div>
       <div className="space-y-5 overflow-auto">
-        {visual.pages.map((page) => <PdfPage key={page.number} page={page} image={rendered[page.number]} scale={scale} query={query} regionMode={regionMode} dragRect={dragRect} onMouseUp={handleMouseUp} onTouchSelection={(pageInfo, event) => { if (event.pointerType === "touch" || event.pointerType === "pen") handleMouseUp(pageInfo, event); }} onRegionStart={beginRegion} selectedIds={selectedIds} selection={selection} />)}
+        {visual.pages.map((page) => <PdfPage key={page.number} page={page} image={rendered[page.number]} scale={scale} query={query} regionMode={regionMode} dragRect={dragRect} onMouseUp={handleMouseUp} onRegionStart={beginRegion} selectedIds={selectedIds} selection={selection} />)}
       </div>
       {selection && <div className="mt-3 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800"><TextSelect size={15} /> Selected content was automatically added. Drag it again to create another copy.</div>}
     </div>
   );
 }
 
-function PdfPage({ page, image, scale, query, regionMode, dragRect, onMouseUp, onTouchSelection, onRegionStart }) {
+function PdfPage({ page, image, scale, query, regionMode, dragRect, onMouseUp, onRegionStart }) {
   const chars = useMemo(() => {
     const result = [];
     for (const item of page.items) {
@@ -210,12 +210,12 @@ function PdfPage({ page, image, scale, query, regionMode, dragRect, onMouseUp, o
     <div className="mx-auto w-fit max-w-full">
       <div className="mb-1 text-center text-[10px] font-bold uppercase tracking-wider text-slate-400">Page {page.number}</div>
       <div
-        className={`relative overflow-hidden bg-white shadow-xl ${regionMode ? "cursor-crosshair touch-none" : ""}`}
+        className={`relative overflow-hidden bg-white shadow-xl ${regionMode ? "cursor-crosshair" : ""}`}
         style={{ width: page.width * scale, height: page.height * scale }}
-        onPointerDown={(e) => onRegionStart(e, page, e.currentTarget)}
+        onMouseDown={(e) => onRegionStart(e, page, e.currentTarget)}
       >
         {image && <img src={image} alt={`Page ${page.number}`} draggable={false} className="absolute inset-0 h-full w-full select-none" />}
-        <div className="absolute inset-0 select-text" onMouseUp={(e) => onMouseUp(page, e)} onPointerUp={(e) => onTouchSelection?.(page, e)}>
+        <div className="absolute inset-0 select-text" onMouseUp={(e) => onMouseUp(page, e)}>
           {chars.map((c) => {
             const match = filtered && c.char.toLowerCase().includes(filtered);
             return <span key={c.id} data-char-id={c.id} data-char={c.char} data-x={c.x} data-y={c.y} data-w={c.w} data-h={c.h} data-font-size={c.fontSize} data-font-family={c.fontFamily} data-font-weight={c.fontWeight || 400}
@@ -504,8 +504,8 @@ function HtmlVisual({ visual, file, query, onSelection }) {
       setDragRect(next);
     };
     const up = () => {
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", up);
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("mouseup", up);
       const r = dragRectRef.current;
       dragRectRef.current = null;
       setDragRect(null);
@@ -521,8 +521,8 @@ function HtmlVisual({ visual, file, query, onSelection }) {
       onSelection({ id: sourceId, sourceId, sourceElementId: sourceId, sourceFileId: file?.__siId || "", sourceFileName: file?.name || "Document", text: selected.map((el) => el.textContent || "").join(" ").trim(), order: 0, visualKind: "html-region", visual: { kind: "html", html: source, bounds: r, sourceFaithful: true } });
       setRegionMode(false);
     };
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", up, { once: true });
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", up, { once: true });
   }
 
   return <div className="relative">
@@ -535,7 +535,7 @@ function HtmlVisual({ visual, file, query, onSelection }) {
       </>}
       <button type="button" className={`btn-secondary !px-2.5 !py-1.5 ${regionMode ? "!border-emerald-400 !bg-emerald-50 !text-emerald-700" : ""}`} onClick={() => setRegionMode((v) => !v)}><Crop size={14} /> {regionMode ? "Exit region" : "Select image/region"}</button>
     </div>
-    <div ref={ref} onClick={handleClick} onMouseDown={handleSpreadsheetMouseDown} onMouseUp={(event) => { handleSpreadsheetMouseUp(event); handleMouseUp(event); }} onPointerDown={(event) => { if (event.pointerType === "touch" || event.pointerType === "pen") handleSpreadsheetMouseDown(event); beginRegion(event); }} onPointerUp={(event) => { if (event.pointerType === "touch" || event.pointerType === "pen") { handleSpreadsheetMouseUp(event); handleMouseUp(event); } }} className={`docx-visual rounded-2xl bg-white p-8 shadow-xl ${regionMode ? "cursor-crosshair touch-none" : ""}`} dangerouslySetInnerHTML={{ __html: visual.html }} />
+    <div ref={ref} onClick={handleClick} onMouseDown={(event) => { handleSpreadsheetMouseDown(event); beginRegion(event); }} onMouseUp={(event) => { handleSpreadsheetMouseUp(event); handleMouseUp(event); }} className={`docx-visual rounded-2xl bg-white p-8 shadow-xl ${regionMode ? "cursor-crosshair" : ""}`} dangerouslySetInnerHTML={{ __html: visual.html }} />
     {dragRect && <div className="pointer-events-none absolute border-2 border-emerald-500 bg-emerald-200/20" style={{ left: dragRect.x, top: dragRect.y, width: dragRect.w, height: dragRect.h }} />}
   </div>;
 }
@@ -567,8 +567,8 @@ function ImageVisual({ visual, file, onSelection }) {
       setDragRect(next);
     };
     const up = async () => {
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", up);
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("mouseup", up);
       const r = dragRectRef.current;
       dragRectRef.current = null;
       setDragRect(null);
@@ -581,13 +581,13 @@ function ImageVisual({ visual, file, onSelection }) {
       onSelection({ id: sourceId, sourceId, sourceElementId: sourceId, sourceFileId: file?.__siId || "", sourceFileName: file?.name || "", text: "", order: 0, visualKind: "image-selection", visual: { kind: "image", dataUrl: image, width, height, aspectRatio: width / Math.max(1, height), sourceFaithful: true } });
       setRegionMode(false);
     };
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", up, { once: true });
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", up, { once: true });
   }
 
   return <div className="rounded-2xl border border-slate-200 bg-slate-100 p-3">
     <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-slate-600"><span><ImageIcon size={15} className="mr-1 inline" /> Select image to add it, or capture a precise region.</span><button type="button" className={`btn-secondary !px-2.5 !py-1.5 ${regionMode ? "!border-emerald-400 !bg-emerald-50 !text-emerald-700" : ""}`} onClick={() => setRegionMode((v) => !v)}><Crop size={14} /> {regionMode ? "Exit region" : "Select image/region"}</button></div>
-    <div ref={ref} onPointerDown={beginRegion} className={`relative mx-auto w-fit max-w-full overflow-hidden rounded-xl bg-white p-3 shadow-sm ${regionMode ? "cursor-crosshair touch-none" : ""}`}>
+    <div ref={ref} onMouseDown={beginRegion} className={`relative mx-auto w-fit max-w-full overflow-hidden rounded-xl bg-white p-3 shadow-sm ${regionMode ? "cursor-crosshair" : ""}`}>
       <button type="button" onClick={selectImage} className="group block cursor-pointer rounded-lg text-left focus:outline-none focus:ring-2 focus:ring-emerald-400">
         <img src={visual.dataUrl} alt="Uploaded document" draggable={false} className="mx-auto max-h-[720px] max-w-full object-contain transition group-hover:opacity-90" />
       </button>

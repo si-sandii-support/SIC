@@ -88,29 +88,26 @@ function renderBlockColumn(d, block, x, y, width, maxBottom) {
     return renderImageColumn(d, block.visual.dataUrl, x, y, width, maxBottom);
   }
   const html = block?.visual?.kind === "html" ? String(block.visual.html || "") : "";
-  if (!html) return renderTextColumn(d, cleanText(block?.text), x, y, width, maxBottom, block?.style || {});
+  if (!html) return renderTextColumn(d, cleanText(block?.text), x, y, width, maxBottom);
   const token = /<img\b[^>]*src=["']([^"']+)["'][^>]*>|<table\b[\s\S]*?<\/table>/gi;
   let cursor = 0;
   for (const match of html.matchAll(token)) {
-    y = renderTextColumn(d, stripHtml(html.slice(cursor, match.index)), x, y, width, maxBottom, block?.style || {});
+    y = renderTextColumn(d, stripHtml(html.slice(cursor, match.index)), x, y, width, maxBottom);
     if (/^<img/i.test(match[0])) y = renderImageColumn(d, match[1], x, y, width, maxBottom);
     else y = renderTableColumn(d, match[0], x, y, width, maxBottom);
     if (y >= maxBottom) return maxBottom;
     cursor = match.index + match[0].length;
   }
-  return renderTextColumn(d, stripHtml(html.slice(cursor)), x, y, width, maxBottom, block?.style || {});
+  return renderTextColumn(d, stripHtml(html.slice(cursor)), x, y, width, maxBottom);
 }
 
-function renderTextColumn(d, text, x, y, width, maxBottom, style = {}) {
+function renderTextColumn(d, text, x, y, width, maxBottom) {
   const cleaned = cleanText(String(text || "").replace(/[ \t]+/g, " ").replace(/\n[ \t]+/g, "\n")).trim();
   if (!cleaned || y >= maxBottom) return y;
-  const fontSize = Math.max(6, Math.min(48, style.fontSize ? Number(style.fontSize) * 0.75 : 8.5));
-  const align = ["left", "center", "right", "justify"].includes(style.textAlign) ? style.textAlign : "left";
-  d.fontSize(fontSize).fillColor("#1e293b");
+  d.fontSize(8.5).fillColor("#1e293b");
   const height = Math.max(1, maxBottom - y);
-  const options = { width, height, align, lineGap: Math.max(0, Math.min(12, fontSize * ((Number(style.lineHeight) || 1.25) - 1))), paragraphGap: 2, ellipsis: true, breakAt: "word" };
-  d.text(cleaned, x, y, options);
-  return Math.min(maxBottom, y + d.heightOfString(cleaned, options));
+  d.text(cleaned, x, y, { width, height, lineGap: 2, paragraphGap: 2, ellipsis: true, breakAt: "word" });
+  return Math.min(maxBottom, y + d.heightOfString(cleaned, { width, lineGap: 2, paragraphGap: 2 }));
 }
 
 function renderImageColumn(d, src, x, y, width, maxBottom) {
@@ -160,30 +157,29 @@ function dataFromUrl(src) {
 
 function renderBlock(d, b) {
   if ((b?.visual?.kind === "image" || b?.visual?.kind === "pdf-selection") && b.visual.dataUrl) { addImage(d, b.visual.dataUrl); return; }
-  if (b?.visual?.kind === "html") { renderHtml(d, b.visual.html, b?.style || {}); return; }
+  if (b?.visual?.kind === "html") { renderHtml(d, b.visual.html); return; }
   const text = cleanText(b?.text);
   if (text) {
     for (const line of text.split(/\n/)) {
       ensureRoom( d, 18);
-      const style = b?.style || {};
-      d.fontSize(Math.max(6, Math.min(48, style.fontSize ? Number(style.fontSize) * 0.75 : 11))).fillColor("#1e293b").text(line || " ", { lineGap: 3, width: pageMetrics(d).usableWidth, align: ["left", "center", "right", "justify"].includes(style.textAlign) ? style.textAlign : "left" });
+      d.fontSize(11).fillColor("#1e293b").text(line || " ", { lineGap: 3, width: pageMetrics(d).usableWidth });
     }
     d.moveDown(0.5);
   }
 }
-function renderHtml(d, html, style = {}) {
+function renderHtml(d, html) {
   const source = String(html || "");
   const token = /<img\b[^>]*src=["']([^"']+)["'][^>]*>|<table\b[\s\S]*?<\/table>/gi;
   let cursor = 0;
   for (const match of source.matchAll(token)) {
-    renderPlain(d, source.slice(cursor, match.index), style);
+    renderPlain(d, source.slice(cursor, match.index));
     if (/^<img/i.test(match[0])) addImage(d, match[1]);
     else renderTable(d, match[0]);
     cursor = match.index + match[0].length;
   }
-  renderPlain(d, source.slice(cursor), style);
+  renderPlain(d, source.slice(cursor));
 }
-function renderPlain(d, html, style = {}) {
+function renderPlain(d, html) {
   const text = decode(cleanText(String(html)
     .replace(/<table\b[\s\S]*?<\/table>/gi, " ")
     .replace(/<br\s*\/?>/gi, "\n")
@@ -193,7 +189,7 @@ function renderPlain(d, html, style = {}) {
   if (!text.trim()) return;
   for (const paragraph of text.split(/\n+/).map((s) => s.replace(/\s+/g, " ").trim()).filter(Boolean)) {
     ensureRoom(d, 30);
-    d.fontSize(Math.max(6, Math.min(48, style.fontSize ? Number(style.fontSize) * 0.75 : 11))).fillColor("#1e293b").text(paragraph, { width: pageMetrics(d).usableWidth, lineGap: 3, paragraphGap: 4, align: ["left", "center", "right", "justify"].includes(style.textAlign) ? style.textAlign : "left" });
+    d.fontSize(11).fillColor("#1e293b").text(paragraph, { width: pageMetrics(d).usableWidth, lineGap: 3, paragraphGap: 4 });
   }
 }
 function renderTable(d, html) {

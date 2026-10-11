@@ -8,7 +8,7 @@ export async function buildDocx(blocks, title, layoutMode = "vertical") {
     // block stays independent inside its own cell and rows are kept together.
     for (let i = 0; i < source.length; i += 2) {
       const pair = source.slice(i, i + 2);
-      const cellWidth = Math.floor(10106 / pair.length);
+      const cellWidth = Math.floor(9360 / pair.length);
       const row = new TableRow({
         cantSplit: true,
         children: pair.map((block) => new TableCell({
@@ -42,8 +42,8 @@ function childrenForBlock(b, maxImageWidth = 560, maxImageHeight = 650) {
   const children = [];
   const html = b?.visual?.kind === "html" ? b.visual.html : "";
   if (html) {
-    appendHtml(children, html, maxImageWidth, maxImageHeight, b?.style || {});
-    if (!children.length && b?.text) appendTextParagraphs(children, b.text, b?.style || {});
+    appendHtml(children, html, maxImageWidth, maxImageHeight);
+    if (!children.length && b?.text) appendTextParagraphs(children, b.text);
     return children.length ? children : [new Paragraph({ children: [new TextRun("")] })];
   }
   if (b?.visual?.kind === "image" && b.visual.dataUrl) {
@@ -52,62 +52,42 @@ function childrenForBlock(b, maxImageWidth = 560, maxImageHeight = 650) {
     return children.length ? children : [new Paragraph({ children: [new TextRun("")] })];
   }
   const text = cleanText(b?.text);
-  if (text) appendTextParagraphs(children, text, b?.style || {});
+  if (text) appendTextParagraphs(children, text);
   return children.length ? children : [new Paragraph({ children: [new TextRun("")] })];
 }
 
-function appendHtml(children, html, maxImageWidth = 560, maxImageHeight = 650, style = {}) {
+function appendHtml(children, html, maxImageWidth = 560, maxImageHeight = 650) {
   const source = String(html || "");
   const tableMatches = [...source.matchAll(/<table\b[\s\S]*?<\/table>/gi)];
   let cursor = 0;
   for (const match of tableMatches) {
-    appendTextParagraphs(children, htmlText(source.slice(cursor, match.index)), style);
+    appendTextParagraphs(children, htmlText(source.slice(cursor, match.index)));
     const table = parseTable(match[0]);
-    if (table.length) children.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: table.map((row) => new TableRow({ cantSplit: true, children: row.map((cell) => new TableCell({ margins: { top: 60, bottom: 60, left: 80, right: 80 }, children: [new Paragraph({ keepLines: true, alignment: cell.align, children: [new TextRun(cleanText(cell.text))] })] })) })) }));
+    if (table.length) children.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: table.map((row) => new TableRow({ cantSplit: true, children: row.map((cell) => new TableCell({ children: [new Paragraph({ keepLines: true, children: [new TextRun(cleanText(cell))] })] })) })) }));
     cursor = match.index + match[0].length;
   }
   const rest = source.slice(cursor);
   const images = [...rest.matchAll(/<img\b[^>]*src=["']([^"']+)["'][^>]*>/gi)];
   let pos = 0;
   for (const match of images) {
-    appendTextParagraphs(children, htmlText(rest.slice(pos, match.index)), style);
+    appendTextParagraphs(children, htmlText(rest.slice(pos, match.index)));
     const image = dataUrlBuffer(match[1]);
     if (image) children.push(new Paragraph({ keepLines: true, widowControl: true, spacing: { before: 120, after: 160 }, children: [new ImageRun({ data: image.buffer, transformation: fitImage(image.width, image.height, maxImageWidth, maxImageHeight) })] }));
     pos = match.index + match[0].length;
   }
-  appendTextParagraphs(children, htmlText(rest.slice(pos)), style);
+  appendTextParagraphs(children, htmlText(rest.slice(pos)));
 }
 
-function appendTextParagraphs(children, text, style = {}) {
+function appendTextParagraphs(children, text) {
   const clean = cleanText(text);
   if (!clean) return;
-  const align = ["left", "center", "right", "justify"].includes(style.textAlign) ? style.textAlign : "left";
-  const fontSize = Math.max(6, Math.min(72, style.fontSize ? Number(style.fontSize) * 0.75 : 11));
-  const fontFamily = safeFont(style.fontFamily);
-  const lineHeight = Math.max(0.7, Math.min(3, Number(style.lineHeight) || 1.25));
-  const letterSpacing = Math.max(-2, Math.min(10, Number(style.letterSpacing) || 0));
   clean.split(/\n+/).forEach((line) => {
     const value = line.replace(/^[\t ]+|[\t ]+$/g, "");
-    if (value) children.push(new Paragraph({
-      keepLines: true, widowControl: true, alignment: align,
-      spacing: { after: 100, line: Math.round(fontSize * 20 * lineHeight) },
-      children: [new TextRun({ text: value, font: fontFamily, size: Math.round(fontSize * 2), bold: Number(style.fontWeight) >= 600, italics: style.fontStyle === "italic", characterSpacing: Math.round(letterSpacing * 20) })],
-    }));
+    if (value) children.push(new Paragraph({ keepLines: true, widowControl: true, spacing: { after: 100 }, children: [new TextRun(value)] }));
   });
 }
-function safeFont(value) {
-  const font = String(value || "Arial").split(",")[0].replace(/[\"']/g, "").trim();
-  return ["Arial", "Georgia", "Times New Roman", "Verdana", "Courier New", "Calibri", "Aptos"].includes(font) ? font : "Arial";
-}
 function htmlText(html) { return decode(String(html || "").replace(/<br\s*\/?>/gi, "\n").replace(/<hr\b[^>]*>/gi, "\n────────────\n").replace(/<[^>]+>/g, " ")).replace(/\u00a0/g, " "); }
-function parseTable(html) {
-  return [...html.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi)].map((m) => [...m[1].matchAll(/<(td|th)\b([^>]*)>([\s\S]*?)<\/\1>/gi)].map((c) => {
-    const attr = c[2] || "";
-    const style = (attr.match(/style=["']([^"']*)["']/i)?.[1] || "").toLowerCase();
-    const align = (attr.match(/\balign=["']?(left|center|right|justify)/i)?.[1] || style.match(/text-align\s*:\s*(left|center|right|justify)/)?.[1] || (c[1].toLowerCase() === "th" ? "center" : "left")).toLowerCase();
-    return { text: htmlText(c[3]).trim(), align };
-  }));
-}
+function parseTable(html) { return [...html.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi)].map((m) => [...m[1].matchAll(/<t[dh]\b[^>]*>([\s\S]*?)<\/t[dh]>/gi)].map((c) => htmlText(c[1]).trim())); }
 function dataUrlBuffer(src) { const m = String(src || "").match(/^data:([^;,]+)?;base64,(.+)$/s); if (!m) return null; try { const buffer = Buffer.from(m[2], "base64"); const size = sniffImage(buffer); return { buffer, width: size.width, height: size.height }; } catch { return null; } }
 function sniffImage(buffer) { if (buffer[0] === 0x89 && buffer[1] === 0x50) return pngSize(buffer); if (buffer[0] === 0xff && buffer[1] === 0xd8) return jpegSize(buffer); return { width: 800, height: 500 }; }
 function pngSize(b) { return { width: b.readUInt32BE(16) || 800, height: b.readUInt32BE(20) || 500 }; }
