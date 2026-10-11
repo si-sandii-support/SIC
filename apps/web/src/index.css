@@ -1,0 +1,206 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #0f172a;
+  background: #f5faf8;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+html { scroll-behavior: smooth; }
+body { margin: 0; min-width: 320px; background: #f5faf8; }
+*, *::before, *::after { box-sizing: border-box; }
+img, svg { display: block; }
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-slate-200/80 bg-white shadow-soft;
+  }
+  .btn {
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition duration-150 disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-[#075E54] text-white shadow-sm hover:bg-[#064e3b];
+  }
+  .btn-secondary {
+    @apply btn border border-slate-200 bg-white text-slate-700 hover:border-emerald-200 hover:bg-emerald-50 hover:text-[#075E54];
+  }
+  .btn-accent {
+    @apply btn bg-[#25D366] text-[#064e3b] hover:bg-[#20bd5a];
+  }
+  .input {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500;
+  }
+}
+
+::selection { background: rgba(37, 211, 102, .22); }
+:focus-visible { outline: 3px solid rgba(37, 211, 102, .28); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+
+/* Visual document fidelity */
+.docx-visual { color: #111827; line-height: 1.45; overflow-x: auto; }
+.docx-visual h1 { font-size: 2rem; line-height: 1.15; margin: 0.75rem 0; font-weight: 800; }
+.docx-visual h2 { font-size: 1.5rem; line-height: 1.2; margin: 0.7rem 0; font-weight: 750; }
+.docx-visual h3 { font-size: 1.25rem; line-height: 1.25; margin: 0.6rem 0; font-weight: 700; }
+.docx-visual p { margin: 0.45rem 0; }
+.docx-visual ul, .docx-visual ol { margin: 0.5rem 0 0.75rem 1.5rem; }
+.docx-visual table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; }
+.docx-visual th, .docx-visual td { border: 1px solid #cbd5e1; padding: 0.45rem 0.55rem; vertical-align: top; }
+.docx-visual img { max-width: 100%; height: auto; }
+.docx-visual blockquote { margin: 0.75rem 0; padding-left: 1rem; border-left: 3px solid #94a3b8; }
+
+/* Source-faithful renderers: keep uploaded plain-text/CSV/PPT layouts readable and selectable. */
+.si-source-pre { margin: 0; min-height: 120px; white-space: pre-wrap; overflow-wrap: anywhere; font: 14px/1.55 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; color: #334155; }
+.si-source-table-wrap { overflow: auto; max-width: 100%; }
+.si-source-table { width: max-content; min-width: 100%; border-collapse: collapse; font-size: 13px; }
+.si-source-table td { border: 1px solid #cbd5e1; padding: 6px 8px; vertical-align: top; white-space: pre-wrap; }
+.si-ppt-slide { color: #0f172a; }
+.si-ppt-slide [data-si-element] { font-size: clamp(10px, 1.5vw, 24px); line-height: 1.2; }
+.docx-visual img { max-width: 100%; height: auto; }
+.docx-visual table { border-collapse: collapse; max-width: 100%; }
+.docx-visual td, .docx-visual th { border: 1px solid #cbd5e1; padding: 6px 8px; }
+.tool-btn{display:inline-flex;height:28px;min-width:28px;align-items:center;justify-content:center;border-radius:8px;padding:0 7px;font-size:11px;font-weight:700;color:#475569;background:#fff;border:1px solid #e2e8f0}.tool-btn:hover{background:#ecfdf5;color:#047857}
+
+/* XLSX/PPTX visual selection fidelity */
+.si-xlsx-sheet { min-width: max-content; margin-bottom: 1.5rem; }
+.si-xlsx-title { margin: 0 0 .75rem; font-size: 1rem; font-weight: 800; color: #334155; }
+.si-xlsx-sheet table { width: max-content; min-width: 100%; border-collapse: collapse; table-layout: auto; }
+.si-xlsx-sheet td, .si-xlsx-sheet th { min-width: 44px; border: 1px solid #cbd5e1; padding: 6px 8px; vertical-align: top; white-space: pre-wrap; }
+.si-xlsx-sheet [data-si-cell] { cursor: pointer; }
+.si-xlsx-sheet [data-si-cell]:hover, .si-ppt-slide [data-si-element]:hover { outline: 2px solid rgba(16,185,129,.35); outline-offset: -2px; }
+.si-ppt-slide { isolation: isolate; transform-origin: top left; }
+.si-ppt-slide [data-si-pptx-shape], .si-ppt-slide [data-si-pptx-image] { cursor: pointer; }
+
+/* Production visual fidelity: selected Office content stays compact and readable. */
+.si-selected-table { border-collapse: collapse !important; table-layout: auto !important; width: max-content !important; max-width: none !important; }
+.si-selected-table td, .si-selected-table th { border: 1px solid #cbd5e1 !important; padding: 6px 8px !important; vertical-align: top !important; white-space: pre-wrap !important; }
+.si-ppt-slide { position: relative; width: 100%; max-width: 960px; overflow: hidden; background: #fff; }
+.si-ppt-slide svg { display: block; width: 100%; height: 100%; }
+.si-ppt-slide [data-si-pptx-shape], .si-ppt-slide [data-si-pptx-image] { cursor: pointer; }
+.si-ppt-slide [data-si-pptx-shape]:hover, .si-ppt-slide [data-si-pptx-image]:hover { outline: 2px solid rgba(16,185,129,.45); outline-offset: -2px; }
+.si-ppt-selected { max-width: none !important; }
+
+/* PPTX source-faithful viewport: rendered Office slide is the visual layer;
+   selectable objects sit above it without changing the slide appearance. */
+.si-ppt-slide .si-ppt-rendered-slide { pointer-events: none; user-select: none; }
+.si-ppt-slide [data-si-pptx-shape],
+.si-ppt-slide [data-si-pptx-image] { -webkit-user-drag: none; }
+.si-ppt-slide [data-si-pptx-shape]:focus-visible,
+.si-ppt-slide [data-si-pptx-image]:focus-visible { outline: 2px solid rgba(16,185,129,.8); outline-offset: -2px; }
+
+
+/* Excel-like selection viewport: preserve wide columns; never stack cells into a narrow card. */
+.si-selected-spreadsheet-viewport { width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+.si-selected-spreadsheet { width: max-content; min-width: 100%; max-width: none; overflow: visible; padding: 12px; color: #111827; }
+.si-selected-spreadsheet table, .si-selected-spreadsheet .si-selected-table { width: max-content !important; min-width: max-content !important; max-width: none !important; table-layout: auto !important; border-collapse: collapse !important; }
+.si-selected-spreadsheet td, .si-selected-spreadsheet th { min-width: 72px; max-width: none !important; white-space: pre-wrap; overflow-wrap: normal; word-break: normal; padding: 7px 10px; vertical-align: middle; }
+.si-selected-spreadsheet [style*="width"] { max-width: none; }
+.si-xlsx-sheet { width: max-content; min-width: 100%; }
+.si-xlsx-sheet table { width: max-content !important; min-width: 100%; table-layout: auto; }
+.si-xlsx-sheet td, .si-xlsx-sheet th { white-space: pre-wrap; overflow-wrap: normal; word-break: normal; }
+
+/* Excel selection: drags select an inclusive rectangular range; row/column headers
+   remain shortcuts for whole-row/whole-column selection. Avoid browser text artifacts. */
+.si-xlsx-sheet td[data-si-cell], .si-xlsx-sheet th[data-si-cell] { user-select: none; -webkit-user-select: none; }
+.si-xlsx-sheet td[data-si-cell] *, .si-xlsx-sheet th[data-si-cell] * { user-select: none; -webkit-user-select: none; }
+.si-xlsx-sheet td[data-si-cell]:active, .si-xlsx-sheet th[data-si-cell]:active { background-color: inherit; }
+
+/* Excel-like worksheet headers, selection and overflow */
+.si-xlsx-sheet { max-width: 100%; overflow: auto; }
+.si-xlsx-sheet table { min-width: max-content !important; }
+.si-xlsx-sheet .si-xlsx-row-header,
+.si-xlsx-sheet [data-si-col-header] { position: sticky; z-index: 2; background: #f1f5f9; color: #475569; text-align: center; font-size: 11px; font-weight: 800; user-select: none; cursor: pointer; min-width: 34px; padding: 5px 8px; border: 1px solid #cbd5e1; }
+.si-xlsx-sheet .si-xlsx-row-header { left: 0; }
+.si-xlsx-sheet .si-xlsx-corner { position: sticky; left: 0; z-index: 4; background: #e2e8f0; min-width: 34px; }
+.si-xlsx-sheet [data-si-cell].si-active-source { outline: 2px solid #059669 !important; outline-offset: -2px; background-color: #ecfdf5; }
+.si-xlsx-sheet [data-si-row-header]:hover, .si-xlsx-sheet [data-si-col-header]:hover { background: #d1fae5; }
+.si-selected-spreadsheet-viewport { overflow-x: auto !important; overflow-y: auto !important; max-width: 100%; max-height: 520px; }
+
+.si-xlsx-sheet [data-si-cell].si-xlsx-selected { background-color: #d1fae5 !important; outline: 1px solid #10b981; outline-offset: -1px; }
+.si-xlsx-sheet [data-si-cell].si-active-source { outline: 2px solid #059669 !important; outline-offset: -2px; }
+
+
+/* SIC cross-device production hardening */
+html, body, #root { width: 100%; min-height: 100%; }
+body { overflow-x: clip; }
+main, header, footer, section, article, .card { min-width: 0; }
+button, [role="button"], input, textarea, select { -webkit-tap-highlight-color: transparent; }
+button { touch-action: manipulation; }
+input, textarea, select { max-width: 100%; }
+:where(button, a, input, textarea, select, [tabindex]):focus-visible {
+  outline: 3px solid rgba(5, 150, 105, .45);
+  outline-offset: 2px;
+}
+.card { min-width: 0; }
+.si-source-table-wrap, .si-xlsx-sheet, .si-selected-spreadsheet-viewport,
+.docx-visual, .visual-document, .pdf-page, .si-ppt-slide {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+.si-xlsx-sheet, .si-source-table-wrap, .si-selected-spreadsheet-viewport { touch-action: pan-x pan-y; }
+.cursor-grab, .touch-none, [data-dnd-handle] { touch-action: none; user-select: none; -webkit-user-select: none; }
+canvas, .si-ppt-rendered-slide { max-width: 100%; }
+svg, img, video, canvas { height: auto; }
+img { object-fit: contain; }
+#workspace > * { min-width: 0; }
+#workspace input, #workspace textarea, #workspace select { min-width: 0; }
+#workspace .overflow-auto, #workspace .overflow-x-auto { scrollbar-width: thin; scrollbar-color: #a7cfc0 #f1f5f9; }
+#workspace .overflow-auto::-webkit-scrollbar,
+#workspace .overflow-x-auto::-webkit-scrollbar { width: 8px; height: 8px; }
+#workspace .overflow-auto::-webkit-scrollbar-thumb,
+#workspace .overflow-x-auto::-webkit-scrollbar-thumb { background: #a7cfc0; border-radius: 999px; }
+#workspace .overflow-auto::-webkit-scrollbar-track,
+#workspace .overflow-x-auto::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 999px; }
+
+@media (max-width: 639px) {
+  .card { border-radius: 1rem; }
+  #workspace { gap: 0.875rem; }
+  #workspace > section { width: 100%; }
+  #workspace .p-4 { padding: 0.875rem; }
+  #workspace .min-h-\[420px\] { min-height: 300px; }
+  #workspace .sm\:min-h-\[575px\] { min-height: 360px; }
+  #workspace .max-h-\[900px\],
+  #workspace .sm\:max-h-\[820px\],
+  #workspace .max-h-\[760px\] { max-height: min(68dvh, 620px); }
+  #workspace button { min-height: 36px; }
+  #workspace .tool-btn { min-width: 36px; min-height: 36px; }
+  .si-xlsx-sheet td, .si-xlsx-sheet th { padding: 7px 8px; }
+  .si-ppt-slide { overflow: auto; }
+  .si-selected-spreadsheet-viewport { max-height: 55dvh; }
+  .si-selected-spreadsheet { padding: 8px; }
+  .si-source-pre { font-size: 12px; }
+  .docx-visual { overflow-wrap: anywhere; }
+  .docx-visual table { display: block; width: max-content; max-width: 100%; overflow-x: auto; }
+}
+@media (min-width: 640px) and (max-width: 1023px) {
+  #workspace { gap: 1rem; }
+  #workspace > * { width: 100%; }
+  #workspace .max-h-\[900px\],
+  #workspace .sm\:max-h-\[820px\],
+  #workspace .max-h-\[760px\] { max-height: 70dvh; }
+}
+@media (min-width: 1024px) and (max-width: 1279px) {
+  #workspace { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  #workspace > :first-child { grid-column: 1 / -1; }
+  #workspace > :nth-child(2), #workspace > :nth-child(3) { min-width: 0; }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  #workspace .max-h-\[900px\],
+  #workspace .sm\:max-h-\[820px\],
+  #workspace .max-h-\[760px\] { max-height: 60dvh; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}

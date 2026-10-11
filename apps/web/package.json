@@ -1,0 +1,53 @@
+{
+  "name": "@si-doc/web",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "build:webpack": "webpack --config webpack.config.cjs --mode production",
+    "analyze:webpack": "webpack --config webpack.config.cjs --mode production --stats detailed",
+    "build:swc": "vite build",
+    "dev:swc": "vite"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@si-doc/shared": "*",
+    "jszip": "^3.10.1",
+    "lucide-react": "^0.468.0",
+    "mammoth": "^1.9.0",
+    "papaparse": "^5.5.3",
+    "pdfjs-dist": "^5.4.149",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-dropzone": "^14.3.8",
+    "react-hot-toast": "^2.6.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.4",
+    "@babel/plugin-transform-react-constant-elements": "^7.27.1",
+    "@babel/preset-env": "^7.28.3",
+    "@babel/preset-react": "^7.27.1",
+    "@vitejs/plugin-react": "^5.0.2",
+    "autoprefixer": "^10.4.21",
+    "babel-loader": "^10.0.0",
+    "css-loader": "^7.1.2",
+    "css-minimizer-webpack-plugin": "^7.0.2",
+    "html-webpack-plugin": "^5.6.4",
+    "mini-css-extract-plugin": "^2.9.2",
+    "postcss-loader": "^8.2.0",
+    "tailwindcss": "^3.4.17",
+    "terser-webpack-plugin": "^5.3.14",
+    "vite": "^7.1.5",
+    "webpack": "^5.101.3",
+    "webpack-cli": "^6.0.1",
+    "@vitejs/plugin-react-swc": "^4.1.0",
+    "@swc/core": "^1.13.5",
+    "swc-loader": "^0.2.6"
+  },
+  "displayName": "SIC"
+}
