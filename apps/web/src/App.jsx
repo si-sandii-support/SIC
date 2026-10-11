@@ -199,6 +199,17 @@ export default function App() {
     });
   }, []);
 
+  const addBlockFromMobileCopy = useCallback((block) => {
+    // Ensure a newly copied item is visible even when Selected Content had an old search filter.
+    setSelectedQuery("");
+    addBlock(block);
+    if (typeof window !== "undefined") {
+      window.setTimeout(() => {
+        document.getElementById("selected-content")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 80);
+    }
+  }, [addBlock]);
+
   const selectElement = useCallback((block) => {
     if (!block?.id || (!block?.text && !block?.visual)) return;
     // Selecting an exact source element immediately creates one editable copy
@@ -572,6 +583,7 @@ export default function App() {
                 onSearch={setExtractedQuery}
                 selected={selected}
                 onAdd={addBlock}
+                onAddMobile={addBlockFromMobileCopy}
                 onElementSelect={selectElement}
                 activeSelection={activeSelection}
                 onClearSelection={() => setActiveSelection(null)}

@@ -25,6 +25,11 @@ export async function buildPptx(blocks, title, layoutMode = "vertical") {
 function renderPptBlock(slide, block, left, width, horizontal) {
   const html = block?.visual?.kind === "html" ? block.visual.html : "";
   const top = 0.55;
+  const style = block?.style || {};
+  const align = ["left", "center", "right", "justify"].includes(style.textAlign) ? style.textAlign : "left";
+  const fontFace = safeFont(style.fontFamily);
+  const fontSize = Math.max(6, Math.min(48, style.fontSize ? Number(style.fontSize) * 0.75 : (horizontal ? 10 : 16)));
+  const textStyle = { align, fontFace, fontSize, bold: Number(style.fontWeight) >= 600, italic: style.fontStyle === "italic", breakLine: false, valign: "top", fit: "shrink", charSpacing: Math.max(-2, Math.min(10, Number(style.letterSpacing) || 0)) };
   if (html) {
     const images = [...html.matchAll(/<img\b[^>]*src=["']([^"']+)["'][^>]*>/gi)];
     const tables = parseTables(html);
@@ -46,7 +51,7 @@ function renderPptBlock(slide, block, left, width, horizontal) {
     }
     if (text && y < 7.1) {
       const availableH = Math.max(0.4, 7.05 - y);
-      slide.addText(text, { x: left, y, w: width, h: availableH, fontSize: horizontal ? 8 : 11, margin: 0.04, fit: "shrink", valign: "top", breakLine: false });
+      slide.addText(text, { ...textStyle, x: left, y, w: width, h: availableH, fontSize: Math.min(fontSize, horizontal ? 12 : 20), margin: 0.04 });
     }
     return;
   }
@@ -55,10 +60,18 @@ function renderPptBlock(slide, block, left, width, horizontal) {
     return;
   }
   const text = cleanText(block?.text);
-  if (text) slide.addText(text, { x: left, y: top, w: width, h: 5.9, fontSize: horizontal ? 10 : 16, margin: 0.08, breakLine: false, valign: "top", fit: "shrink" });
+  if (text) slide.addText(text, { ...textStyle, x: left, y: top, w: width, h: 5.9, margin: 0.08 });
 }
 
-function parseTables(html) { return [...String(html).matchAll(/<table\b[\s\S]*?<\/table>/gi)].map((m) => [...m[0].matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi)].map((r) => [...r[1].matchAll(/<t[dh]\b[^>]*>([\s\S]*?)<\/t[dh]>/gi)].map((c) => ({ text: decode(cleanText(c[1].replace(/<[^>]+>/g," "))), options:{} })))); }
+function safeFont(value) { const font = String(value || "Arial").split(",")[0].replace(/[\"']/g, "").trim(); return ["Arial", "Georgia", "Times New Roman", "Verdana", "Courier New", "Calibri", "Aptos"].includes(font) ? font : "Arial"; }
+function parseTables(html) {
+  return [...String(html).matchAll(/<table\b[\s\S]*?<\/table>/gi)].map((m) => [...m[0].matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi)].map((r) => [...r[1].matchAll(/<(td|th)\b([^>]*)>([\s\S]*?)<\/\1>/gi)].map((c) => {
+    const attrs = c[2] || "";
+    const inlineStyle = (attrs.match(/style=["']([^"']*)["']/i)?.[1] || "").toLowerCase();
+    const align = (attrs.match(/\balign=["']?(left|center|right|justify)/i)?.[1] || inlineStyle.match(/text-align\s*:\s*(left|center|right|justify)/)?.[1] || (c[1].toLowerCase() === "th" ? "center" : "left")).toLowerCase();
+    return { text: decode(cleanText(c[3].replace(/<[^>]+>/g, " "))), options: { align, bold: c[1].toLowerCase() === "th" } };
+  })));
+}
 function htmlText(html) { return decode(cleanText(String(html).replace(/<img\b[^>]*>/gi," ").replace(/<table\b[\s\S]*?<\/table>/gi," ").replace(/<br\s*\/?>/gi,"\n").replace(/<hr\b[^>]*>/gi,"\n────────────\n").replace(/<[^>]+>/g," ").replace(/ {2,}/g," "))); }
 function decode(v) { return String(v).replace(/&nbsp;/g," ").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;/g,"'"); }
 function cleanText(value) { return String(value ?? "").replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "").replace(/\uFFFD/g, ""); }

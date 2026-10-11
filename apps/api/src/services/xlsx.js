@@ -71,18 +71,38 @@ function writeMatrix(sheet, block, matrix, startRow, startCol, widths) {
     const excelRow = sheet.getRow(startRow + rowOffset);
     const sourceRowHeight = spreadsheet.rowHeights?.[rowOffset];
     if (sourceRowHeight) excelRow.height = Math.max(excelRow.height || 0, Math.max(12, Math.min(409, Number(sourceRowHeight) * 0.75)));
+    else {
+      const estimatedLines = values.reduce((max, value, index) => Math.max(max, Math.ceil(String(value ?? "").length / Math.max(8, widths[startCol + index - 1] || 18))), 1);
+      excelRow.height = Math.max(excelRow.height || 0, Math.min(120, 15 * estimatedLines));
+    }
     values.forEach((value, colOffset) => {
       const cell = sheet.getCell(startRow + rowOffset, startCol + colOffset);
       cell.value = value;
       const sourceStyle = spreadsheet.cellStyles?.[rowOffset]?.[colOffset] || {};
+      const displayLength = String(value ?? "").split("\n").reduce((max, line) => Math.max(max, line.length), 0);
+      const absoluteColumn = startCol + colOffset - 1;
+      widths[absoluteColumn] = Math.max(widths[absoluteColumn] || 0, Math.min(48, Math.max(10, displayLength + 2)));
       const formula = spreadsheet.formulas?.[rowOffset]?.[colOffset];
       const numberFormat = spreadsheet.numFmts?.[rowOffset]?.[colOffset];
       if (formula) cell.value = { formula: String(formula).replace(/^=/, "") };
+      const blockAlign = ["left", "center", "right", "justify"].includes(block?.style?.textAlign)
+        ? (block.style.textAlign === "justify" ? "distributed" : block.style.textAlign)
+        : undefined;
       cell.alignment = {
         vertical: sourceStyle.alignment?.vertical || "top",
-        horizontal: sourceStyle.alignment?.horizontal,
+        horizontal: sourceStyle.alignment?.horizontal || blockAlign,
         wrapText: sourceStyle.alignment?.wrapText ?? true,
+        shrinkToFit: false,
       };
+      if (block?.style?.fontFamily || block?.style?.fontSize || block?.style?.fontWeight || block?.style?.fontStyle) {
+        cell.font = {
+          ...(sourceStyle.font || {}),
+          ...(block.style.fontFamily ? { name: String(block.style.fontFamily).split(",")[0].replace(/[\"']/g, "").trim() } : {}),
+          ...(block.style.fontSize ? { size: Math.max(6, Math.min(72, (Number(block.style.fontSize) || 16) * 0.75)) } : {}),
+          ...(block.style.fontWeight ? { bold: Number(block.style.fontWeight) >= 600 } : {}),
+          ...(block.style.fontStyle ? { italic: block.style.fontStyle === "italic" } : {}),
+        };
+      }
       if (sourceStyle.font) cell.font = sourceStyle.font;
       if (sourceStyle.fill) cell.fill = sourceStyle.fill;
       if (sourceStyle.border) cell.border = sourceStyle.border;
