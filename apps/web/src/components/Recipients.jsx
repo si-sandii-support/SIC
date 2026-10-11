@@ -15,7 +15,12 @@ export function Recipients({ label, items, onChange, placeholder, type }) {
   const normalize = useCallback((raw) => {
     const trimmed = String(raw || "").trim();
     if (type === "email") return trimmed.toLowerCase();
-    return trimmed.replace(/[\s().-]/g, "");
+    const compact = trimmed.replace(/[\s().-]/g, "");
+    // Convenient local normalization for Indian mobile numbers; users can still
+    // enter any explicit international number beginning with +.
+    if (/^\d{10}$/.test(compact)) return `+91${compact}`;
+    if (/^91\d{10}$/.test(compact)) return `+${compact}`;
+    return compact;
   }, [type]);
 
   async function add() {
@@ -73,8 +78,21 @@ export function Recipients({ label, items, onChange, placeholder, type }) {
       const nextChecks = {};
       for (const { candidate, result } of results) {
         const finalValue = normalize(result.normalized || result.email || result.phone || candidate);
-        nextChecks[finalValue] = { status: result.status, message: result.message };
-        if (result.status === "valid" && !items.includes(finalValue)) accepted.push(finalValue);
+        // Syntax is enough to add an email recipient; MX verification is advisory
+        // because mobile networks, DNS and privacy relays may block the check.
+        // Phone numbers still require the API to confirm numbering-plan validity.
+        const locallyValid = type === "email"
+          ? EMAIL_RE.test(finalValue)
+          : /^\+?[1-9]\d{6,14}$/.test(finalValue.replace(/[\s().-]/g, ""));
+        // Mobile devices often cannot reach the optional validation API (offline,
+        // captive portal, or privacy relay). Accept syntactically valid phone
+        // numbers locally as well; API validation remains advisory, not a blocker.
+        const acceptedLocally = locallyValid;
+        nextChecks[finalValue] = {
+          status: result.status === "valid" ? "valid" : (acceptedLocally || result.status === "unknown" ? "unknown" : result.status),
+          message: acceptedLocally && result.status !== "valid" ? "Email format is valid; domain delivery could not be verified." : result.message,
+        };
+        if (locallyValid && !items.includes(finalValue)) accepted.push(finalValue);
       }
 
       setChecks((prev) => ({ ...prev, ...nextChecks }));
@@ -126,7 +144,11 @@ export function Recipients({ label, items, onChange, placeholder, type }) {
 
         <div className="mt-2 flex gap-2">
           <input
-            className="input !border-0 !p-2 shadow-none"
+            className="input min-h-11 !border-0 !p-2 shadow-none"
+            type={type === "email" ? "text" : "tel"}
+            inputMode={type === "email" ? "email" : "tel"}
+            autoComplete={type === "email" ? "email" : "tel"}
+            enterKeyHint="done"
             value={value}
             onChange={(event) => setValue(event.target.value)}
             onKeyDown={(event) => {
@@ -137,24 +159,27 @@ export function Recipients({ label, items, onChange, placeholder, type }) {
             }}
             placeholder={placeholder}
             aria-label={label}
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
             disabled={checking}
           />
           <button
             type="button"
-            className="btn-secondary !px-3"
+            className="btn-secondary min-h-11 !px-3"
             onClick={add}
             disabled={!value.trim() || checking}
             aria-label={`Validate and add ${type}`}
           >
-            {checking ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+            {checking ? <Loader2 size={16} className="animate-spin" /> : <><Plus size={16} /><span className="hidden sm:inline">Add</span></>}
           </button>
         </div>
 
-        {checking && <p className="mt-2 px-1 text-[10px] font-semibold text-emerald-600">Validating {type === "email" ? "email addresses" : "phone numbers"}…</p>}
+        {checking && <p className="mt-2 px-1 text-[10px] font-semibold text-emerald-600">Checking {type === "email" ? "email addresses" : "phone numbers"}…</p>}
         <p className="mt-2 px-1 text-[10px] leading-4 text-slate-400">
           {type === "email"
-            ? "Paste multiple addresses separated by comma, semicolon or a new line. Format and MX records are checked."
-            : "Paste multiple numbers separated by comma, semicolon or a new line. Numbers are normalized to international format."}
+            ? "Paste multiple addresses separated by comma, semicolon or a new line. Format is checked locally; domain verification is used when the API is available."
+            : "Paste multiple numbers separated by comma, semicolon or a new line. Ten-digit Indian mobile numbers are normalized to +91; other numbers should include their country code."}
         </p>
       </div>
     </div>

@@ -1,6 +1,7 @@
 const pending = new Map();
 const DB_NAME = "sic-document-studio";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
+const STATE_STORE = "state";
 const FILE_STORE = "files";
 
 export function loadLocal(key, fallback) {
@@ -32,10 +33,46 @@ function openFileDb() {
     request.onupgradeneeded = () => {
       const db = request.result;
       if (!db.objectStoreNames.contains(FILE_STORE)) db.createObjectStore(FILE_STORE);
+      if (!db.objectStoreNames.contains(STATE_STORE)) db.createObjectStore(STATE_STORE);
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error || new Error("IndexedDB unavailable"));
   });
+}
+
+
+export async function persistJson(key, value) {
+  if (!key) return;
+  try {
+    const db = await openFileDb();
+    if (!db) { saveLocalIdle(key, value, 0); return; }
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(STATE_STORE, "readwrite");
+      tx.objectStore(STATE_STORE).put(value, key);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+  } catch {
+    // Keep a small localStorage fallback for browsers where IndexedDB is unavailable.
+    try { saveLocalIdle(key, value, 0); } catch {}
+  }
+}
+
+export async function restoreJson(key, fallback = null) {
+  if (!key) return fallback;
+  try {
+    const db = await openFileDb();
+    if (!db) return loadLocal(key, fallback);
+    const value = await new Promise((resolve, reject) => {
+      const tx = db.transaction(STATE_STORE, "readonly");
+      const request = tx.objectStore(STATE_STORE).get(key);
+      request.onsuccess = () => resolve(request.result ?? fallback);
+      request.onerror = () => reject(request.error);
+    });
+    db.close();
+    return value;
+  } catch { return loadLocal(key, fallback); }
 }
 
 export async function persistFileBlob(id, file) {

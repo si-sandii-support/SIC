@@ -1,4 +1,4 @@
-# SIC
+# SIC — Document Studio
 
 Professional document selection, conversion and sharing workspace branded as **SIC**.
 
@@ -6,7 +6,7 @@ Professional document selection, conversion and sharing workspace branded as **S
 
 ### Email
 
-When an email is added, SIC performs live server-side validation:
+When an email is added, SI performs live server-side validation:
 
 1. Email syntax check
 2. DNS MX lookup for the domain
@@ -17,14 +17,14 @@ An MX record cannot prove that a specific mailbox exists. The UI therefore says 
 
 ### WhatsApp
 
-SIC validates international phone-number formatting immediately. For WhatsApp itself, the Cloud API does **not** provide a trustworthy standalone "is this person on WhatsApp?" capability check that should be exposed independently. SIC therefore uses the real WhatsApp API response when a message is sent and shows the result for every number.
+SI validates international phone-number formatting immediately. For WhatsApp itself, the Cloud API does **not** provide a trustworthy standalone "is this person on WhatsApp?" capability check that should be exposed independently. SI therefore uses the real WhatsApp API response when a message is sent and shows the result for every number.
 
 This avoids pretending a phone-format check is a WhatsApp-account check.
 
 ## Project structure
 
 ```text
-SIC-document-studio/
+SI-document-studio/
 ├── apps/
 │   ├── web/                 # React/Vite/Tailwind UI
 │   └── api/                 # Express validation, conversion and sharing API
@@ -34,6 +34,10 @@ SIC-document-studio/
 ├── docker-compose.yml
 └── docs-ARCHITECTURE.md
 ```
+
+## Production deployment
+
+See [`DEPLOYMENT-PRODUCTION.md`](./DEPLOYMENT-PRODUCTION.md) for Cloudflare Pages + Render setup, environment variables, release checks, and current production limitations. A Render Blueprint is included in `render.yaml`.
 
 ## Run
 
@@ -101,10 +105,10 @@ Business and Personal load their predefined subject/message. Custom uses the exa
 
 ## Sending modes
 
-SIC supports two sending modes. Real provider credentials are optional.
+SI supports two sending modes. Real provider credentials are optional.
 
 - **Email API mode:** configure `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, and `SMTP_FROM`. `SMTP_USER`/`SMTP_FROM` are your sender account; recipient emails are entered separately in the UI.
-- **Email fallback mode:** when SMTP is not configured, SIC opens the user's default email application with the selected recipients, subject, and message. Generated files must be attached manually.
+- **Email fallback mode:** when SMTP is not configured, SI opens the user's default email application with the selected recipients, subject, and message. Generated files must be attached manually.
 - **WhatsApp Cloud API mode:** configure `WHATSAPP_ACCESS_TOKEN` and `WHATSAPP_PHONE_NUMBER_ID`. The phone-number ID identifies your WhatsApp Business sending number and is not a recipient number.
 - **WhatsApp fallback mode:** when Cloud API is not configured, SIC prepares a separate `wa.me` chat with the prefilled message for each unique valid number saved in WhatsApp recipients. It attempts to open all chats in tabs; tabs blocked by the browser remain in an explicit-click queue. Recipient numbers are stored locally in the browser (`localStorage`), not sent to SIC servers by this fallback. The generated file must be attached manually in each chat, and the user still presses Send.
 

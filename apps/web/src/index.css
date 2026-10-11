@@ -204,3 +204,74 @@ img { object-fit: contain; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
+
+
+/* Cross-device rich-content copy controls: comfortable targets for iOS, Android and tablets. */
+@media (pointer: coarse) {
+  .btn-primary, .btn-secondary, button { -webkit-tap-highlight-color: transparent; }
+  .btn-primary, .btn-secondary { min-height: 44px; }
+}
+.si-copy-selected-action { min-height: 44px; touch-action: manipulation; }
+
+
+/* SIC responsive polish: fluid controls, safe-area spacing, and predictable document previews. */
+:root { color-scheme: light; }
+html { min-width: 320px; scroll-padding-top: 5rem; }
+body { min-width: 320px; min-height: 100dvh; }
+#root { min-height: 100dvh; }
+#workspace { align-items: start; }
+#workspace > * { min-width: 0; max-width: 100%; }
+#workspace .docx-visual, #workspace .si-source-pre, #workspace .si-ppt-slide,
+#workspace .si-selected-spreadsheet, #workspace .visual-document { max-width: 100%; }
+#workspace .docx-visual img, #workspace .docx-visual video,
+#workspace .si-ppt-slide img, #workspace .si-selected-spreadsheet img { max-width: 100%; height: auto; }
+#workspace .docx-visual table { max-width: 100%; }
+#workspace .si-ppt-slide { aspect-ratio: 16 / 9; height: auto; }
+#workspace .si-ppt-slide svg { width: 100%; height: 100%; }
+#workspace .si-selected-spreadsheet-viewport { scrollbar-gutter: stable; }
+#workspace .tool-btn { flex: 0 0 auto; }
+#workspace :is(input, textarea, select) { font-size: max(16px, 1em); }
+
+@media (max-width: 767px) {
+  main { padding-left: max(0.75rem, env(safe-area-inset-left)); padding-right: max(0.75rem, env(safe-area-inset-right)); }
+  #workspace { display: grid; grid-template-columns: minmax(0, 1fr); width: 100%; }
+  #workspace > * { grid-column: 1 / -1; width: 100%; }
+  #workspace .min-h-\[420px\] { min-height: 280px; }
+  #workspace .sm\:min-h-\[575px\] { min-height: 320px; }
+  #workspace .overflow-auto, #workspace .overflow-x-auto, #workspace .overflow-y-auto { overscroll-behavior: contain; }
+  #workspace .si-xlsx-sheet { max-width: 100%; }
+  #workspace .si-ppt-slide { overflow: auto; }
+  #workspace .si-selected-spreadsheet-viewport { max-height: 50dvh; }
+  #workspace .si-selected-spreadsheet { min-width: max-content; }
+  #workspace .si-copy-selected-action { width: 100%; justify-content: center; }
+  #workspace .tool-btn { min-width: 40px; min-height: 40px; }
+  #workspace .flex.flex-wrap { row-gap: 0.5rem; }
+  footer { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+  #workspace { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  #workspace > :first-child { grid-column: 1 / -1; }
+  #workspace > :nth-child(2), #workspace > :nth-child(3) { grid-column: auto; }
+}
+@media (min-width: 1200px) {
+  #workspace { grid-template-columns: 260px minmax(0, 1fr) minmax(300px, 360px); }
+}
+@media (pointer: coarse) {
+  button, [role="button"], input[type="checkbox"], input[type="radio"] { touch-action: manipulation; }
+  button { min-height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; }
+}
+
+
+/* Centered, fluid application frame across desktop, tablet, and mobile. */
+html, body, #root { width: 100%; }
+body { margin-inline: auto; }
+main { width: 100%; margin-inline: auto; }
+main > div { width: 100%; max-width: 1680px; margin-inline: auto; }
+#workspace { width: 100%; margin-inline: auto; justify-items: stretch; }
+#workspace > * { justify-self: stretch; }
+@media (max-width: 767px) {
+  main > div { padding-left: max(0.75rem, env(safe-area-inset-left)); padding-right: max(0.75rem, env(safe-area-inset-right)); }
+}

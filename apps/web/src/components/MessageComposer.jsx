@@ -9,10 +9,10 @@ export function MessageComposer({ mode, onModeChange, emails, setEmails, phones,
     <section className="card p-5 md:p-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div><p className="text-xs font-bold uppercase tracking-wider text-slate-400">Step 2</p><h2 className="mt-1 text-lg font-black">Message & sharing</h2><p className="text-sm text-slate-500">Add email and/or WhatsApp recipients. Either channel can be used independently.</p></div>
-        <div className="flex rounded-xl bg-slate-100 p-1">{["business", "personal", "custom"].map((item) => <button key={item} onClick={() => onModeChange(item)} className={`rounded-lg px-4 py-2 text-sm font-bold capitalize ${mode === item ? "bg-white text-slate-950 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>{item}</button>)}</div>
+        <div className="flex max-w-full flex-wrap rounded-xl bg-slate-100 p-1">{["business", "personal", "custom"].map((item) => <button type="button" key={item} onClick={() => onModeChange(item)} className={`min-h-11 rounded-lg px-3 sm:px-4 py-2 text-sm font-bold capitalize ${mode === item ? "bg-white text-slate-950 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>{item}</button>)}</div>
       </div>
 
-      <div className="mt-6 grid gap-5 lg:grid-cols-2">
+      <div className="mt-6 grid min-w-0 gap-5 lg:grid-cols-2">
         <div className="space-y-4">
           <Recipients label="Email recipients" items={emails} onChange={setEmails} placeholder="name@company.com · Enter to validate" type="email" />
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
@@ -65,11 +65,11 @@ export function MessageComposer({ mode, onModeChange, emails, setEmails, phones,
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div><label className="label">Subject</label><input className="input" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder={mode === "custom" ? "" : "Email subject"} /></div>
+        <div className="min-w-0 space-y-4">
+          <div><label className="label">Subject</label><input className="input min-h-11" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder={mode === "custom" ? "" : "Email subject"} /></div>
           <div>
             <div className="flex items-center justify-between"><label className="label !mb-0">{mode === "custom" ? "Custom message" : `${mode} message`}</label><span className={`text-xs ${mode === "custom" && count > maxCustom ? "font-bold text-red-500" : "text-slate-400"}`}>{count} / {mode === "custom" ? maxCustom : 125} words</span></div>
-            <textarea className="input mt-1.5 min-h-44 resize-y leading-6" value={message} onChange={(e) => setMessage(e.target.value)} placeholder={mode === "custom" ? "" : "Write your message…"} />
+            <textarea className="input mt-1.5 min-h-44 resize-y leading-6" autoCapitalize="sentences" value={message} onChange={(e) => setMessage(e.target.value)} placeholder={mode === "custom" ? "" : "Write your message…"} />
             {mode === "custom" && <p className="mt-1.5 text-[11px] text-slate-400">Custom uses the same layout as Business and Personal, but starts completely empty.</p>}
           </div>
         </div>

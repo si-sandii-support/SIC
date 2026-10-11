@@ -6,7 +6,7 @@ import { FileOutput, Search, UploadCloud, Zap } from "lucide-react";
 import toast from "react-hot-toast";
 import { templates, wordCount } from "@si-doc/shared";
 import { parseFile } from "./lib/parser";
-import { loadLocal, saveLocalIdle, persistFileBlob, removePersistedFile, restoreFileBlobs } from "./lib/storage";
+import { loadLocal, saveLocalIdle, persistFileBlob, removePersistedFile, restoreFileBlobs, persistJson, restoreJson } from "./lib/storage";
 import { api } from "./lib/api";
 import { openBrowserEmail, openBrowserWhatsApp, reserveWhatsAppWindows, closeReservedWindows } from "./lib/shareFallback";
 import { Header } from "./components/Header";
@@ -26,6 +26,7 @@ const MAX_CUSTOM = 250;
 export default function App() {
   const [files, setFiles] = useState(() => loadLocal("si-files", []));
   const [restoringFiles, setRestoringFiles] = useState(true);
+  const [stateHydrated, setStateHydrated] = useState(false);
   const [activeId, setActiveId] = useState(() => files[0]?.id);
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
@@ -69,7 +70,19 @@ export default function App() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const cached = await restoreFileBlobs(files.map((file) => file.id));
+      // IndexedDB stores full extracted metadata and visual payloads; localStorage is
+      // retained as a lightweight compatibility fallback for older sessions.
+      const [savedFiles, savedSelected, savedLayout] = await Promise.all([
+        restoreJson("si-files-full", null),
+        restoreJson("si-selected-full", null),
+        restoreJson("si-selected-layout", null),
+      ]);
+      if (cancelled) return;
+      const restoredMetadata = Array.isArray(savedFiles) ? savedFiles : files;
+      if (Array.isArray(savedFiles)) setFiles(savedFiles);
+      if (Array.isArray(savedSelected)) setSelected(savedSelected);
+      if (savedLayout === "horizontal" || savedLayout === "vertical") setSelectedLayout(savedLayout);
+      const cached = await restoreFileBlobs(restoredMetadata.map((file) => file.id));
       if (cancelled) return;
       if (Object.keys(cached).length) {
         setFiles((current) => current.map((file) => {
@@ -80,20 +93,22 @@ export default function App() {
         }));
       }
       setRestoringFiles(false);
+      setStateHydrated(true);
     })();
     return () => { cancelled = true; };
-    // Restore only once from the cached file IDs that existed at startup.
+    // Restore once during startup; subsequent state changes are persisted below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => saveLocalIdle("si-files", files.map(({ file, ...rest }) => rest)), [files]);
-  useEffect(() => saveLocalIdle("si-selected-layout", selectedLayout), [selectedLayout]);
-  useEffect(() => saveLocalIdle("si-selected", selected.map((item) => ({
-    ...item,
-    visual: item.visual?.dataUrl
-      ? { ...item.visual, dataUrl: undefined, persistedPreviewUnavailable: true }
-      : item.visual,
-  }))), [selected]);
+  useEffect(() => {
+    if (!stateHydrated) return;
+    const metadata = files.map(({ file, ...rest }) => rest);
+    void persistJson("si-files-full", metadata);
+    // Small fallback omits heavy visual payloads if localStorage is quota-limited.
+    saveLocalIdle("si-files", metadata.map((item) => ({ ...item, visual: undefined })));
+  }, [files, stateHydrated]);
+  useEffect(() => { if (stateHydrated) void persistJson("si-selected-layout", selectedLayout); }, [selectedLayout, stateHydrated]);
+  useEffect(() => { if (stateHydrated) void persistJson("si-selected-full", selected); }, [selected, stateHydrated]);
   useEffect(() => saveLocalIdle("si-emails", emails), [emails]);
   useEffect(() => saveLocalIdle("si-phones", phones), [phones]);
   useEffect(() => saveLocalIdle("si-sender-email", senderEmail), [senderEmail]);
@@ -104,9 +119,10 @@ export default function App() {
     if (!active) return [];
     const q = deferredExtractedQuery.trim().toLowerCase();
     if (!q) return active.blocks;
-    return active.blocks.filter((block) =>
-      block.text.toLowerCase().includes(q) || block.sourceFileName.toLowerCase().includes(q)
-    );
+    return active.blocks.filter((block) => {
+      const indexed = block.searchText || `${String(block.text || "")} ${String(block.sourceFileName || "")}`.toLowerCase();
+      return indexed.includes(q);
+    });
   }, [active, deferredExtractedQuery]);
 
   const searchResults = useMemo(() => {
@@ -114,7 +130,10 @@ export default function App() {
     if (!q) return [];
     return files.flatMap((file) =>
       file.blocks
-        .filter((block) => block.text.toLowerCase().includes(q) || block.sourceFileName.toLowerCase().includes(q))
+        .filter((block) => {
+          const indexed = block.searchText || `${String(block.text || "")} ${String(block.sourceFileName || "")}`.toLowerCase();
+          return indexed.includes(q);
+        })
         .slice(0, 4)
         .map((block) => ({ file, block }))
     ).slice(0, 10);
@@ -123,9 +142,10 @@ export default function App() {
   const selectedFiltered = useMemo(() => {
     const q = deferredSelectedQuery.trim().toLowerCase();
     if (!q) return selected;
-    return selected.filter((block) =>
-      block.text.toLowerCase().includes(q) || block.sourceFileName.toLowerCase().includes(q)
-    );
+    return selected.filter((block) => {
+      const indexed = block.searchText || `${String(block.text || "")} ${String(block.sourceFileName || "")}`.toLowerCase();
+      return indexed.includes(q);
+    });
   }, [selected, deferredSelectedQuery]);
 
   const selectedWords = useMemo(() => selected.reduce((sum, block) => sum + wordCount(block.text), 0), [selected]);
@@ -166,7 +186,7 @@ export default function App() {
         try {
           const parsed = await parseFile(job.file, job.id);
           setFiles((current) => current.map((file) =>
-            file.id === job.id ? { ...file, status: "ready", blocks: parsed.blocks, text: parsed.text, visual: parsed.visual } : file
+            file.id === job.id ? { ...file, status: "ready", blocks: parsed.blocks.map((block) => ({ ...block, searchText: `${String(block.text || "")} ${String(block.sourceFileName || job.file.name)}`.toLowerCase() })), text: parsed.text, visual: parsed.visual } : file
           ));
           toast.success(`${job.file.name} extracted`);
         } catch (error) {
@@ -198,6 +218,17 @@ export default function App() {
       return next.map((item, order) => ({ ...item, order }));
     });
   }, []);
+
+  const addBlockFromMobileCopy = useCallback((block) => {
+    // Ensure a newly copied item is visible even when Selected Content had an old search filter.
+    setSelectedQuery("");
+    addBlock(block);
+    if (typeof window !== "undefined") {
+      window.setTimeout(() => {
+        document.getElementById("selected-content")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 80);
+    }
+  }, [addBlock]);
 
   const selectElement = useCallback((block) => {
     if (!block?.id || (!block?.text && !block?.visual)) return;
@@ -541,7 +572,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#f5faf8] text-slate-950">
+    <div className="min-h-dvh min-w-dvh overflow-x-hidden bg-[#f5faf8] text-slate-950">
       <Header
         query={query}
         setQuery={setQuery}
@@ -572,6 +603,7 @@ export default function App() {
                 onSearch={setExtractedQuery}
                 selected={selected}
                 onAdd={addBlock}
+                onAddMobile={addBlockFromMobileCopy}
                 onElementSelect={selectElement}
                 activeSelection={activeSelection}
                 onClearSelection={() => setActiveSelection(null)}

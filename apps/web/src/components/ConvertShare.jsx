@@ -96,12 +96,12 @@ export function ConvertShare({
             )}
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
             <button
               type="button"
               onClick={() => onShare("all")}
               disabled={!allReady}
-              className="btn-primary"
+              className="btn-primary min-h-11 w-full sm:w-auto"
               title="Prepare/send to every added email and WhatsApp recipient in one action"
             >
               <FileOutput size={16} />
@@ -112,7 +112,7 @@ export function ConvertShare({
                 type="button"
                 onClick={onDownload}
                 disabled={busy}
-                className="btn-secondary"
+                className="btn-secondary min-h-11 w-full sm:w-auto"
               >
                 <Download size={16} />
                 Download
@@ -123,7 +123,7 @@ export function ConvertShare({
               type="button"
               onClick={() => onShare("email")}
               disabled={!emailReady}
-              className="btn-accent"
+              className="btn-accent min-h-11 w-full sm:w-auto"
             >
               <Mail size={16} />
               {sendingEmail ? (
@@ -140,7 +140,7 @@ export function ConvertShare({
               type="button"
               onClick={() => onShare("whatsapp")}
               disabled={!phoneReady}
-              className="btn-secondary !border-slate-700 !bg-slate-900 !text-white hover:!bg-slate-800"
+              className="btn-secondary min-h-11 w-full !border-slate-700 !bg-slate-900 !text-white hover:!bg-slate-800 sm:w-auto"
             >
               <MessageCircle size={16} />
               {sendingWhatsApp ? (
