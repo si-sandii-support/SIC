@@ -166,12 +166,12 @@ export function Recipients({ label, items, onChange, placeholder, type }) {
           />
           <button
             type="button"
-            className="btn-secondary min-h-11 !px-3"
+            className="btn-secondary min-h-11 min-w-11 !px-3"
             onClick={add}
             disabled={!value.trim() || checking}
             aria-label={`Validate and add ${type}`}
           >
-            {checking ? <Loader2 size={16} className="animate-spin" /> : <><Plus size={16} /><span className="hidden sm:inline">Add</span></>}
+            {checking ? <Loader2 size={16} className="animate-spin" /> : <><Plus size={16} /><span>Add</span></>}
           </button>
         </div>
 

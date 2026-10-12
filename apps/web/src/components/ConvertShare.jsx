@@ -61,9 +61,10 @@ export function ConvertShare({
 
           <button
             type="button"
-            onClick={onConvert}
+            onClick={() => { if (typeof onConvert === "function") onConvert(); }}
             disabled={!ready}
-            className="btn-primary"
+            aria-label={busy && operation.toLowerCase().includes("converting") ? "Generating selected content file" : "Generate selected content file"}
+            className="btn-primary min-h-11 touch-manipulation"
           >
             <FileOutput size={16} />
             {busy && operation.toLowerCase().includes("converting")
@@ -110,9 +111,10 @@ export function ConvertShare({
             {generated && (
               <button
                 type="button"
-                onClick={onDownload}
+                onClick={() => { if (typeof onDownload === "function") onDownload(); }}
                 disabled={busy}
-                className="btn-secondary min-h-11 w-full sm:w-auto"
+                aria-label="Download generated selected content file"
+                className="btn-secondary min-h-11 touch-manipulation w-full sm:w-auto"
               >
                 <Download size={16} />
                 Download
@@ -123,7 +125,8 @@ export function ConvertShare({
               type="button"
               onClick={() => onShare("email")}
               disabled={!emailReady}
-              className="btn-accent min-h-11 w-full sm:w-auto"
+              aria-label="Prepare email for added recipients"
+              className="btn-accent min-h-11 touch-manipulation w-full sm:w-auto"
             >
               <Mail size={16} />
               {sendingEmail ? (
@@ -140,7 +143,8 @@ export function ConvertShare({
               type="button"
               onClick={() => onShare("whatsapp")}
               disabled={!phoneReady}
-              className="btn-secondary min-h-11 w-full !border-slate-700 !bg-slate-900 !text-white hover:!bg-slate-800 sm:w-auto"
+              aria-label="Prepare WhatsApp chats for added phone numbers"
+              className="btn-secondary min-h-11 touch-manipulation w-full !border-slate-700 !bg-slate-900 !text-white hover:!bg-slate-800 sm:w-auto"
             >
               <MessageCircle size={16} />
               {sendingWhatsApp ? (

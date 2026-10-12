@@ -349,8 +349,37 @@ export default function App() {
     }
   }
 
-  function downloadAttachment(file) { if (!file) return; const a = document.createElement("a"); a.href = `data:${file.mimeType};base64,${file.base64}`; a.download = file.filename; a.click(); }
-  function download() { if (!generated) return; downloadAttachment(generated); }
+  function downloadAttachment(file) {
+    if (!file?.base64) {
+      toast.error("No generated file is available to download. Generate the file again.");
+      return false;
+    }
+    try {
+      // Blob URLs are more reliable than large data: URLs on iOS Safari and Android Chrome.
+      const binary = atob(file.base64.replace(/^data:[^,]*,/, ""));
+      const bytes = new Uint8Array(binary.length);
+      for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+      const blob = new Blob([bytes], { type: file.mimeType || "application/octet-stream" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = file.filename || "Selected_Content";
+      anchor.rel = "noopener";
+      anchor.style.position = "fixed";
+      anchor.style.left = "-9999px";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      // Keep the object URL alive long enough for mobile browsers to start the download.
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      return true;
+    } catch (error) {
+      console.error("Download failed", error);
+      toast.error("The file could not be downloaded. Please generate it again.");
+      return false;
+    }
+  }
+  function download() { if (!generated) { toast.error("Generate the file before downloading."); return; } downloadAttachment(generated); }
 
   async function share(channel) {
     if (channel !== "all") return shareChannel(channel);
