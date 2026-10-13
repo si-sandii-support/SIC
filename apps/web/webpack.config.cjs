@@ -68,7 +68,7 @@ module.exports = {
         MODE: isProduction ? "production" : "development",
         PROD: isProduction,
         DEV: !isProduction,
-        VITE_API_URL: process.env.VITE_API_URL || "http://localhost:4000/api",
+        VITE_API_URL: process.env.VITE_API_URL || "",
         VITE_DONATION_URL: process.env.VITE_DONATION_URL || "",
       }),
     }),
