@@ -601,13 +601,14 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-dvh min-w-dvh overflow-x-hidden bg-[#f5faf8] text-slate-950">
+    <div className="min-h-dvh min-w-0 w-full overflow-x-hidden bg-[#f5faf8] text-slate-950">
       <Header
         query={query}
         setQuery={setQuery}
         searchResults={searchResults}
         onSelectResult={(fileId) => { setActiveId(fileId); setActiveSelection(null); setQuery(""); }}
         dropzone={dropzone}
+        onCameraFile={onUpload}
       />
 
       <main>
