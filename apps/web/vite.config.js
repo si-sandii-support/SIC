@@ -10,6 +10,13 @@ export default defineConfig(() => ({
     port: 5173,
     host: true,
   },
+  proxy: {
+      '/api': {
+        target: 'https://sic-acq.pages.dev',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   build: {
     target: "es2020",
     cssCodeSplit: true,
