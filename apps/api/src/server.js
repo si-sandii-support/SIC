@@ -7,12 +7,13 @@ import { convertRouter } from "./routes/convert.js";
 import { shareRouter } from "./routes/share.js";
 import { validateRouter } from "./routes/validate.js";
 import { renderRouter } from "./routes/render.js";
+import serverless from "serverless-http";
 
 const app = express();
 const port = Number(process.env.PORT || 4000);
 const isProduction = process.env.NODE_ENV === "production";
 const maxBodyMb = Math.min(Math.max(Number(process.env.MAX_BODY_MB || 50), 1), 100);
-const allowedOrigins = (process.env.CORS_ORIGIN || (isProduction ? "" : "http://localhost:5173"))
+const allowedOrigins = (process.env.CORS_ORIGIN || (isProduction ? "https://sic-net.netlify.app/" : "http://localhost:5173"))
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
@@ -26,15 +27,11 @@ if (process.env.TRUST_PROXY === "true") app.set("trust proxy", 1);
 app.disable("x-powered-by");
 app.use(helmet());
 app.use(cors({
-  // origin(origin, callback) {
-  //   // Allow server-to-server/health checks with no Origin header. Browser origins must be allowlisted.
-  //   if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-  //   return callback(new Error("Origin is not allowed by CORS."));
-  // },
-  origin: [
-    "https://sic-net.netlify.app/",
-    "http://localhost:5173"
-  ],
+  origin(origin, callback) {
+    // Allow server-to-server/health checks with no Origin header. Browser origins must be allowlisted.
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error("Origin is not allowed by CORS."));
+  },
   methods: ["GET", "POST", 'PUT', 'DELETE', 'PATCH', "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   maxAge: 600,
@@ -59,3 +56,7 @@ app.use((err, _req, res, _next) => {
 });
 
 app.listen(port, "0.0.0.0", () => console.log(`SIC API listening on port ${port} (${process.env.NODE_ENV || "development"})`));
+
+
+
+export const handler = serverless(app);

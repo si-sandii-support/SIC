@@ -1,0 +1,15 @@
+
+[build]
+  command = "npm run build --workspace apps/web"
+  publish = "apps/web/dist"
+
+[functions]
+  directory = "apps/api/netlify/functions"
+  node_bundler = "esbuild"
+  external_node_modules = ["express"]
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
