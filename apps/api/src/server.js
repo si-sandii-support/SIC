@@ -26,11 +26,15 @@ if (process.env.TRUST_PROXY === "true") app.set("trust proxy", 1);
 app.disable("x-powered-by");
 app.use(helmet());
 app.use(cors({
-  origin(origin, callback) {
-    // Allow server-to-server/health checks with no Origin header. Browser origins must be allowlisted.
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error("Origin is not allowed by CORS."));
-  },
+  // origin(origin, callback) {
+  //   // Allow server-to-server/health checks with no Origin header. Browser origins must be allowlisted.
+  //   if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+  //   return callback(new Error("Origin is not allowed by CORS."));
+  // },
+  origin: [
+    "https://sic-net.netlify.app/",
+    "http://localhost:5173"
+  ],
   methods: ["GET", "POST", 'PUT', 'DELETE', 'PATCH', "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   maxAge: 600,
