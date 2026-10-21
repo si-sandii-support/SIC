@@ -14,7 +14,9 @@ async function post(path, body) {
   try {
     response = await fetch(`${API}${path}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", 
+      // "Access-Control-Allow-Origin": "https://sic-net.netlify.app/"
+     },
       body: JSON.stringify(body),
     });
   } catch (error) {

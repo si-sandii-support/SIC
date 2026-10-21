@@ -10,6 +10,7 @@ import { renderRouter } from "./routes/render.js";
 import serverless from "serverless-http";
 
 const app = express();
+// const apiUrl = import.meta.env.VITE_API_URL || "/api";
 const port = Number(process.env.PORT || 4000);
 const isProduction = process.env.NODE_ENV === "production";
 const maxBodyMb = Math.min(Math.max(Number(process.env.MAX_BODY_MB || 50), 1), 100);
@@ -59,4 +60,4 @@ app.listen(port, "0.0.0.0", () => console.log(`SIC API listening on port ${port}
 
 
 
-export const handler = serverless(app);
+// export serverless(app);
