@@ -34,13 +34,21 @@ app.use(
 );
 
 // These routers must define the expected routes, including POST /convert.
-app.use("/api", convertRouter);
-app.use("/api", shareRouter);
-app.use("/api", validateRouter);
-app.use("/api", renderRouter);
+// app.use("/api", convertRouter);
+// app.use("/api", shareRouter);
+// app.use("/api", validateRouter);
+// app.use("/api", renderRouter);
 
-app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, service: "SIC API" });
+app.use("/api/convert", convertRouter);
+app.use("/api/share", shareRouter);
+app.use("/api/validate", validateRouter);
+app.use("/api/render", renderRouter);
+
+app.get(["/health", "/api/health"], (_req, res) => {
+  res.status(200).json({
+    ok: true,
+    service: "sic-document-api",
+  });
 });
 
 export const handler = serverless(app);
