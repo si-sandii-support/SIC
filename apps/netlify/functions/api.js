@@ -359,5 +359,5 @@ app.use((err, _req, res, _next) => {
   });
 });
 
-export const handler = serverless(app);
+export default serverless(app);
 
