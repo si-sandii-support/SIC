@@ -25,14 +25,27 @@ if (isProduction && (!allowedOrigins.length || allowedOrigins.includes("*"))) {
 if (process.env.TRUST_PROXY === "true") app.set("trust proxy", 1);
 app.disable("x-powered-by");
 app.use(helmet());
+const isAllowedFrontendOrigin = (origin) => {
+  if (!origin || allowedOrigins.includes(origin)) return true;
+  try {
+    const url = new URL(origin);
+    // Permit Cloudflare Pages preview deployments for this project, e.g.
+    // https://<deployment-hash>.sic-acq.pages.dev, without allowing arbitrary domains.
+    return url.protocol === "https:" && /^[a-z0-9-]+\.sic-acq\.pages\.dev$/i.test(url.hostname);
+  } catch {
+    return false;
+  }
+};
+
 app.use(cors({
   origin(origin, callback) {
-    // Allow server-to-server/health checks with no Origin header. Browser origins must be allowlisted.
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    // Express cors handles OPTIONS preflight automatically when the origin is allowed.
+    if (isAllowedFrontendOrigin(origin)) return callback(null, true);
     return callback(new Error("Origin is not allowed by CORS."));
   },
   methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-SIC-Filename"],
+  optionsSuccessStatus: 204,
   maxAge: 600,
 }));
 app.use(express.raw({ type: ["application/octet-stream", "application/vnd.openxmlformats-officedocument.presentationml.presentation"], limit: `${maxBodyMb}mb` }));

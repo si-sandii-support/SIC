@@ -26,8 +26,8 @@ This repository contains a React/Vite frontend and an Express API. Deploy them a
 2. Set the root directory to the repository root.
 3. Build command: `npm run build -w apps/web`
 4. Build output directory: `apps/web/dist`
-5. Set the build environment variable `VITE_API_URL` to `https://YOUR-API-HOST/api` (no trailing slash).
-6. Use Node.js 22 in the Pages build environment, then deploy.
+5. Set the build environment variable `VITE_API_URL` to the **Render API service URL** ending in `/api`, for example `https://sic-document-api-xxxx.onrender.com/api` (no trailing slash). Do **not** set it to your `*.pages.dev` frontend URL; the static frontend host does not implement the Express POST routes and may return HTTP 405.
+6. Use Node.js 22 in the Pages build environment, then deploy. Because `VITE_API_URL` is embedded at build time, rebuild/redeploy the frontend after changing it.
 7. Add the final Pages domain (and any custom domain) to the API's `CORS_ORIGIN`, separated by commas if needed, then redeploy the API.
 
 `VITE_API_URL` is public client configuration, not a secret. Do not put SMTP passwords or Meta access tokens in any `VITE_*` variable.
