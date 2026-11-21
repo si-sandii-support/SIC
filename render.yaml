@@ -3,7 +3,7 @@ services:
     name: sic-document-api
     runtime: docker
     dockerContext: .
-    dockerfilePath: ./apps/api/Dockerfile
+    dockerfilePath: ./apps/backend/Dockerfile
     healthCheckPath: /health
     autoDeploy: true
     envVars:
