@@ -48,6 +48,7 @@ app.use(cors({
   optionsSuccessStatus: 204,
   maxAge: 600,
 }));
+
 app.use(express.raw({ type: ["application/octet-stream", "application/vnd.openxmlformats-officedocument.presentationml.presentation"], limit: `${maxBodyMb}mb` }));
 app.use(express.json({ limit: `${maxBodyMb}mb` }));
 app.use(rateLimit({ windowMs: 60_000, limit: Number(process.env.GLOBAL_RATE_LIMIT || 120), standardHeaders: "draft-8", legacyHeaders: false }));
