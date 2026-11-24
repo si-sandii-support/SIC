@@ -52,7 +52,7 @@ app.use(express.raw({ type: ["application/octet-stream", "application/vnd.openxm
 app.use(express.json({ limit: `${maxBodyMb}mb` }));
 app.use(rateLimit({ windowMs: 60_000, limit: Number(process.env.GLOBAL_RATE_LIMIT || 120), standardHeaders: "draft-8", legacyHeaders: false }));
 
-app.get("/api", (_req, res) => res.status(200).json({ ok: true, service: "sic-document-api" }));
+app.get("/health", (_req, res) => res.status(200).json({ ok: true, service: "sic-document-api" }));
 app.use("/api/convert", rateLimit({ windowMs: 60_000, limit: Number(process.env.CONVERT_RATE_LIMIT || 20), standardHeaders: "draft-8", legacyHeaders: false }), convertRouter);
 app.use("/api/share", rateLimit({ windowMs: 60_000, limit: Number(process.env.SHARE_RATE_LIMIT || 10), standardHeaders: "draft-8", legacyHeaders: false }), shareRouter);
 app.use("/api/validate", rateLimit({ windowMs: 60_000, limit: Number(process.env.VALIDATE_RATE_LIMIT || 30), standardHeaders: "draft-8", legacyHeaders: false }), validateRouter);
