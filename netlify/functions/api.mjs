@@ -9,7 +9,7 @@ async function getHandler() {
   if (!handlerPromise) {
     handlerPromise = Promise.all([
       ServerlessHttp,
-      import("../../apps/backend/src/app.js"),
+      import("../../apps/backend/src/server.js"),
     ])
       .then(([serverlessModule, appModule]) => {
         const serverless =
