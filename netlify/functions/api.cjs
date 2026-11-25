@@ -3,10 +3,12 @@
 
 let handlerPromise;
 
+import ServerlessHttp from "serverless-http";
+
 async function getHandler() {
   if (!handlerPromise) {
     handlerPromise = Promise.all([
-      import("serverless-http"),
+      ServerlessHttp,
       import("../../apps/backend/src/app.js"),
     ])
       .then(([serverlessModule, appModule]) => {
