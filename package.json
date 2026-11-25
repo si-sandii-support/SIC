@@ -13,10 +13,10 @@
     "build:webpack": "npm run build:webpack -w apps/web"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.5"
   },
   "displayName": "SIC",
   "dependencies": {
-    "serverless-http": "^4.0.0"
+    "compression": "^1.8.2"
   }
 }

@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import compression from "compression";
 import rateLimit from "express-rate-limit";
 import { convertRouter } from "./routes/convert.js";
 import { shareRouter } from "./routes/share.js";
@@ -9,6 +10,7 @@ import { validateRouter } from "./routes/validate.js";
 import { renderRouter } from "./routes/render.js";
 
 const app = express();
+const compress = compression();
 const port = Number(process.env.PORT || 4000);
 const isProduction = process.env.NODE_ENV === "production";
 const maxBodyMb = Math.min(Math.max(Number(process.env.MAX_BODY_MB || 50), 1), 100);
@@ -36,6 +38,15 @@ const isAllowedFrontendOrigin = (origin) => {
     return false;
   }
 };
+
+////// //////////////  use compression for limit   ////////////////////
+// Response compression: register as Express middleware.
+app.use(
+  compression({
+    threshold: 1024,
+    level: 4,
+  })
+);
 
 app.use(cors({
   origin(origin, callback) {
