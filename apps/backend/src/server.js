@@ -10,7 +10,6 @@ import { validateRouter } from "./routes/validate.js";
 import { renderRouter } from "./routes/render.js";
 
 const app = express();
-const compress = compression();
 const port = Number(process.env.PORT || 4000);
 const isProduction = process.env.NODE_ENV === "production";
 const maxBodyMb = Math.min(Math.max(Number(process.env.MAX_BODY_MB || 50), 1), 100);
