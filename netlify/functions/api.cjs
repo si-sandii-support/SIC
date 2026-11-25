@@ -10,8 +10,8 @@ import ServerFile from "../../apps/backend/src/server.js"
 async function getHandler() {
   if (!handlerPromise) {
     handlerPromise = Promise.all([
-      ServerlessHttp,
-      ServerFile,
+       import("serverless-http"),
+      import("../../apps/backend/src/app.js"),
     ])
       .then(([serverlessModule, appModule]) => {
         const serverless =
